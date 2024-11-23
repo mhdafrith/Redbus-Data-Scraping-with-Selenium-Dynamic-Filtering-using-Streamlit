@@ -1,0 +1,322 @@
+# for allrouteandlink.ipynb file documentation
+
+1. Define State Transport URLs
+Define URLs for the transport corporations:
+
+for example
+GOA = 'https://www.redbus.in/online-booking/ktcl/?utm_source=rtchometile'
+
+2. Import Required Libraries:
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
+import time
+import pandas as pd
+
+3. Initialize the WebDriver
+Set up the Selenium WebDriver with a timeout:
+
+driver = webdriver.Chrome()
+wait = WebDriverWait(driver, 30)
+4. Navigate to the Target URL
+Navigate to the KTCL page as a starting point:
+
+driver.get("https://www.redbus.in/online-booking/ktcl/?utm_source=rtchometile")
+5. Define Lists for Data Storage
+Create lists to hold route data:
+
+Route_name = []
+Route_link = []
+6. Create a Function to Scrape Data
+Define a function to extract route names and links:
+
+def scrape_page():
+    routescontainer = driver.find_elements(By.XPATH, "//a[@class='route']")
+    for route in routescontainer:
+        try:
+            routename = route.text
+            routelink = route.get_attribute('href')
+            Route_name.append(routename)
+            Route_link.append(routelink)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+
+7. Iterate Through Pages to Scrape Data
+Loop through the first five pages, calling the scrape_page function and navigating to the next page:
+
+for page_number in range(1, 6):
+    scrape_page()
+    if page_number < 5:
+        try:
+            pagination_container = wait.until(EC.presence_of_element_located(
+                (By.XPATH, '//*[@id="root"]/div/div[4]/div[12]')
+            ))
+            next_page_button = pagination_container.find_element(
+                By.XPATH, f'.//div[contains(@class, "DC_117_pageTabs") and text()="{page_number + 1}"]'
+            )
+            actions = ActionChains(driver)
+            actions.move_to_element(next_page_button).perform()
+            time.sleep(1)
+            next_page_button.click()
+            wait.until(EC.text_to_be_present_in_element(
+                (By.XPATH, '//div[contains(@class, "DC_117_pageTabs DC_117_pageActive")]'), str(page_number + 1)))
+            time.sleep(3)
+        except Exception as e:
+            print(f"An error occurred while navigating to page {page_number + 1}: {e}")
+            break
+
+
+8. Save Data to CSV
+Save the scraped data for APSRTC into a CSV file:
+
+df_apsrtc = pd.DataFrame({'route_name': Route_name, 'route_link': Route_link})
+directory = "/Users/mohamedafrith/Desktop/redbus_project"
+filename = "df_apsrtc.csv"
+path = f'{directory}/{filename}'
+df_apsrtc.to_csv(path, index=False)
+
+
+9. Combine Data From Multiple Sources
+Concatenate data from all transport corporations into a single dataframe:
+
+df = pd.concat([df_apsrtc, df_astc, df_bsrtc, df_cturtc, df_hrtc, df_krtc, df_ktcl, df_pepsu, df_tsrtc, df_wbtc], ignore_index=True)
+print(df)
+Execution Notes
+Ensure Selenium WebDriver and ChromeDriver are correctly set up.
+Modify directory to a valid path on your system.
+Install required Python libraries:
+pip install selenium pandas
+Adjust XPath queries if the RedBus website structure changes.
+
+
+
+
+FOR APSRTC_3.ipynb,KRTC.ipynb,tsrtc.ipynb,KTCL.ipynb,HRTC.ipynb,ASTC.ipynb,WBTC.ipynb,CTURTC.ipynb,PEPSU,ipynb AND BSRTC.ipynb documentation
+
+1. Set Up Environment
+Libraries and Modules:
+Import necessary libraries like selenium for web scraping, pandas for data manipulation, and time for delays.
+Initialize the Chrome WebDriver and WebDriverWait for controlling the browser.
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+import pandas as pd
+import time
+Define Inputs:
+Read data from a CSV file containing route names and links.
+df = pd.read_csv("df_bsrtc.csv")
+driver = webdriver.Chrome()
+wait = WebDriverWait(driver, 30)
+2. Data Storage Setup
+Initialize empty lists to store extracted details for:
+
+Route name and link
+Bus details like name, type, departure time, duration, arrival time, and star rating.
+route_name = []
+route_link = []
+busname = []
+bustype = []
+departing_time = []
+duration = []
+reaching_time = []
+star_rating = []
+3. Define Scrolling Function
+The scroll() function ensures all dynamically loaded content is retrieved by scrolling down until the page reaches the bottom.
+
+def scroll():
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:  # Stop scrolling if no new content loads
+            break
+        last_height = new_height
+4. Iterate Through Routes
+Loop through each route from the CSV.
+Visit each route's link and initialize the scraping process.
+for i, r in df.iterrows():
+    link = r["route_link"]
+    routes = r["route_name"]
+    driver.get(link)
+    time.sleep(5)
+5. Handle Pagination or Sub-links
+Find and click relevant sub-links on the page for further navigation.
+linking = driver.find_elements(By.XPATH, f"//a[contains(@href, '{link}')]")
+for i in linking:
+    i.click()
+    time.sleep(3)
+6. Trigger Full Page Loading
+Click a button if necessary to load all buses.
+Use the scroll() function to load dynamically displayed content.
+try:
+    driver.find_element(By.XPATH, "//div[@class='button']").click()
+except:
+    continue
+scroll()
+7. Scrape Bus Details
+Extract details using appropriate XPaths:
+Bus name, type, departure time, duration, arrival time, and star rating.
+Append the extracted data to corresponding lists.
+bus_name = driver.find_elements(By.XPATH, "//div[@class='travels lh-24 f-bold d-color']")
+bus_type = driver.find_elements(By.XPATH, "//div[@class='bus-type f-12 m-top-16 l-color evBus']")
+dp_time = driver.find_elements(By.XPATH, "//div[@class='dp-time f-19 d-color f-bold']")
+duration_time = driver.find_elements(By.XPATH, "//div[@class='dur l-color lh-24']")
+arr_time = driver.find_elements(By.XPATH, "//div[@class='bp-time f-19 d-color disp-Inline']")
+str_rat = driver.find_elements(By.XPATH, "//div[@class='clearfix row-one']/div[@class='column-six p-right-10 w-10 fl']")
+
+for a in bus_name:
+    busname.append(a.text)
+    route_link.append(link)
+    route_name.append(routes)
+for b in bus_type:
+    bustype.append(b.text)
+for c in dp_time:
+    departing_time.append(c.text)
+for d in duration_time:
+    duration.append(d.text)
+for e in arr_time:
+    reaching_time.append(e.text)
+for f in str_rat:
+    star_rating.append(f.text)
+8. Combine and Save Scraped Data
+Combine data into a pandas DataFrame.
+Merge data from multiple CSV files into a single DataFrame.
+Save the consolidated data into a final CSV file.
+# Merge data
+final_redbus_data = pd.concat(
+    map(pd.read_csv, [
+        'df_all_apsrtc.csv', 'df_all_krtc.csv', 'df_all_tsrtc.csv', 
+        'df_all_hrtc.csv', 'df_all_astc.csv', 'df_all_wbtc.csv', 
+        'df_all_cturtc.csv', 'df_all_pepsu.csv', 'df_all_bsrtc.csv'
+    ]), ignore_index=True)
+
+# Save the final data
+dir = '/Users/mohamedafrith/Desktop/redbus_project'
+filename = 'final_redbus_data.csv'
+path = f'{dir}/{filename}'
+final_redbus_data.to_csv(path, index=False)
+9. Clean the Data
+Handle missing or invalid values for the star_rating column.
+Strip unnecessary strings, split values, and convert to numeric format.
+final_redbus_data["star_rating"] = final_redbus_data["star_rating"].str.replace("New", "")
+final_redbus_data["star_rating"] = final_redbus_data["star_rating"].str.strip()
+final_redbus_data["star_rating"] = final_redbus_data["star_rating"].str.split().str[0]
+final_redbus_data["star_rating"] = pd.to_numeric(final_redbus_data["star_rating"], errors='coerce')
+final_redbus_data["star_rating"].fillna(0, inplace=True)
+10. Exit the Program
+Close the browser using driver.quit().
+Print confirmation and the final DataFrame info for validation.
+driver.quit()
+print('done')
+final_redbus_data.info()
+
+
+
+
+
+
+FOR SQL.py file
+
+1. Import Required Libraries
+pymysql: Used for connecting and interacting with the MySQL database.
+pandas: Used for data manipulation and reading data from the CSV file.
+import pymysql
+import pandas as pd
+2. Function to Create a Table
+Define a reusable function to create a table in the database.
+
+Inputs:
+cursor: The cursor object to execute SQL commands.
+table_name: Name of the table to create.
+table_column_declaration: The SQL string defining the table's structure.
+Steps:
+Construct the CREATE TABLE query.
+Execute the query using the cursor.
+Print success confirmation.
+def creation_of_table(cursor, table_name, table_column_declaration):
+    create_table_query = f'CREATE TABLE {table_name}{table_column_declaration};'
+    print("create_table_query = ", create_table_query)
+    cursor.execute(create_table_query)
+    print("Table Created Successfully")
+3. Establish Connection to the Database
+Use pymysql.connect to connect to the MySQL database.
+Connection Parameters:
+host: Database server address (e.g., localhost for local development).
+user: MySQL username (e.g., root).
+password: Password for the MySQL user.
+database: The database to use (e.g., redbus_project).
+connection = pymysql.connect(
+    host='localhost', 
+    user='root', 
+    password='24434244342', 
+    database='redbus_project'
+)
+cursor = connection.cursor()
+4. Define Table Name and Structure
+Specify the table name (table_name) and its column definitions (table_column_declaration) in SQL syntax.
+Example:
+CREATE TABLE bus_data (
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    route_name VARCHAR(255),
+    route_link VARCHAR(255),
+    busname VARCHAR(255),
+    bustype VARCHAR(255),
+    departing_time TIME,
+    duration VARCHAR(255),
+    reaching_time TIME,
+    star_rating DECIMAL(10,2)
+);
+table_name = 'bus_data'
+table_column_declaration = '''
+(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+route_name VARCHAR(255),
+route_link VARCHAR(255),
+busname VARCHAR(255),
+bustype VARCHAR(255),
+departing_time TIME,
+duration VARCHAR(255),
+reaching_time TIME,
+star_rating DECIMAL(10,2))
+'''
+creation_of_table(cursor, table_name, table_column_declaration)
+5. Read CSV Data Using Pandas
+Use pd.read_csv() to load data from a CSV file into a DataFrame.
+Specify the file path to your CSV file.
+df = pd.read_csv('/Users/mohamedafrith/Desktop/redbus_project/final_redbus_data_2.csv')
+6. Reconnect to the Database for Data Insertion
+Define database connection parameters in a dictionary (db_config).
+Reconnect to the database.
+db_config = {
+    'user': 'root',
+    'password': '24434244342',
+    'host': 'localhost',
+    'database': 'redbus_project'
+}
+conn = pymysql.connect(**db_config)
+cursor = conn.cursor()
+7. Insert Data into the Table
+Use the SQL INSERT statement with placeholders (%s) for parameterized queries.
+Iterate through each row of the DataFrame and insert values into the table.
+insert_query = """
+INSERT INTO bus_data 
+(route_name, route_link, busname, bustype, departing_time, duration, reaching_time, star_rating) 
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+"""
+
+for index, row in df.iterrows():
+    cursor.execute(
+        insert_query, 
+        (row['route_name'], row['route_link'], row['busname'], 
+         row['bustype'], row['departing_time'], row['duration'], 
+         row['reaching_time'], row['star_rating'])
+    )
+8. Commit Changes and Close Connections
+Commit the changes to the database using conn.commit() to save the inserted data.
+Close the cursor and connection to release resources.
+conn.commit()
+cursor.close()
+conn.close()

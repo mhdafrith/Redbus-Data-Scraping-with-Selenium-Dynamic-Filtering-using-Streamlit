@@ -1,0 +1,184 @@
+Step-by-Step Procedure Documentation (Note: within the #hashtag refers to python code)
+1. Import Streamlit Library
+
+#import streamlit as st#
+
+Import the Streamlit library, which is used to create interactive web applications in Python.
+
+2. Navigate Between Two Pages in Streamlit
+
+#pg = st.navigation([st.Page("Home.py"), st.Page("Booking.py")])
+pg.run()#
+
+This segment handles navigation between two pages within the Streamlit application.
+st.navigation() allows you to define multiple pages (in this case, Home.py and Booking.py) that the user can navigate between.
+The pg.run() function initiates the navigation process and activates the page transition.
+
+
+3. Create Columns to Display Images Side-by-Side
+
+#col1, col2, col3 = st.columns(3)#
+
+Create three columns within the Streamlit layout using st.columns(3).
+The columns will be used to display images in a side-by-side arrangement.
+
+4. Display Image in Column 1
+
+#with col1:
+    st.image('/Users/mohamedafrith/Downloads/se.png', width=100)#
+Purpose:
+The with col1: block allows you to display content specifically in the first column (col1).
+st.image() is used to display an image. The image path provided ('/Users/mohamedafrith/Downloads/se.png') should point to a local image file on your system.
+The width=100 argument scales the image to 100 pixels wide.
+5. Display Image in Column 2
+
+#with col2:
+    st.image('/Users/mohamedafrith/Downloads/db2.jpg.webp', width=100)#
+Purpose:
+This block does the same as the previous one but for the second column (col2).
+Another image is displayed with the st.image() function, and it is also scaled to a width of 100 pixels.
+6. Display Image in Column 3
+
+#with col3:
+    st.image('/Users/mohamedafrith/Downloads/logo.svg', width=150)#
+
+Similar to the previous columns, this block displays an image in the third column (col3).
+This image is scaled to a width of 150 pixels.
+Displaying Project Title
+7. Display the Project Title
+
+#st.title(':red[Redbus Data Scraping with Selenium & Dynamic Filtering using Streamlit]')#
+
+Purpose:
+st.title() is used to set the title of the Streamlit web application.
+The title text is rendered in a large font and is formatted with red color using the Markdown-style syntax (:red[Text]).
+Displaying Project Information
+8. Display Introduction Section
+
+#st.header("Introduction:", divider='gray')
+st.markdown('This project focuses on web scraping data from Redbus...')#
+
+Purpose:
+st.header("Introduction:") creates a header with the text Introduction, which introduces the project.
+The divider='gray' argument adds a gray horizontal divider beneath the header.
+st.markdown() is used to display formatted text (using Markdown syntax). This provides an introduction to the project, describing its purpose and how it works.
+
+9. Display Approach Section
+
+#st.header('Approach:', divider="gray")
+st.markdown("***Web Scraping:***  We use Selenium to automate browsing and extract real-time data from the Redbus website.")
+st.markdown("***Dynamic Filtering:*** Streamlit is used to create an interactive dashboard...")
+st.markdown("***Data Storage:*** SQL is used to store the scraped data for further analysis or future use")#
+
+Purpose:
+st.header('Approach:') creates a section header for the approach used in the project.
+The following st.markdown() lines explain the approach in detail:
+Web Scraping: Describes how Selenium is used for web scraping to extract real-time data.
+Dynamic Filtering: Explains how Streamlit allows users to filter the data dynamically.
+Data Storage: Highlights the use of SQL for storing the scraped data for future use or analysis.
+
+10. Display Skills Takeaway Section
+
+#st.header("Skills Takeaway:", divider='gray')
+st.markdown("***Web Scraping*** with Selenium to extract live data.")
+st.markdown("***Interactive UI*** creation using Streamlit for real-time filtering.")
+st.markdown("***Database Handling*** with SQL for data storage and management.")
+st.markdown("***Python Programming*** for automation and data processing.")#
+
+Purpose:
+st.header("Skills Takeaway:") creates a section header highlighting the skills gained during the project.
+st.markdown() explains the key skills learned:
+Web Scraping: Using Selenium for data extraction.
+Interactive UI: Using Streamlit to build real-time filtering interfaces.
+Database Handling: Using SQL to manage and store data.
+Python Programming: Automation and processing tasks done with Python.
+
+11. Display Result Section
+
+#st.header("Result:", divider='gray')
+st.markdown("The project allows users to view bus schedules and prices in an interactive interface...")#
+
+Purpose:
+st.header("Result:") creates a header for the results section.
+st.markdown() describes the result of the project, explaining how users can view bus schedules and prices through the interactive interface, along with the advantages of using web scraping, dynamic filtering, and data storage.
+
+
+
+
+for Booking.py page Documentation
+
+Step 1: Importing Libraries
+
+#import streamlit as st
+import pandas as pd
+import mysql.connector#
+
+streamlit: Used to create the web app interface.
+pandas: Used for reading and displaying the data in a tabular format.
+mysql.connector: Used to connect to a MySQL database to fetch bus data.
+
+Step 2: Displaying the Logo
+#st.image("/Users/mohamedafrith/Downloads/rdc-redbus-logo.svg") #logo#
+
+Displays the logo of the app using an image file from your local system.
+
+Step 3: Select State
+
+#state = st.selectbox("Select the State", ('Andhra Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Himachal Pradesh', 'Kerala', 'Punjab', 'Telangana', 'Goa', 'West Bengal'), index=None)#
+
+A dropdown (selectbox) is presented to the user, allowing them to choose a state from a predefined list.
+
+Step 4: Load Data from CSV Files
+The app reads CSV files containing bus route data for different states and stores them in lists for further use. Each list corresponds to a state, which will later be used to filter routes in the MySQL database.
+
+#list_apsrtc = []
+df_apsrtc = pd.read_csv("/Users/mohamedafrith/Desktop/redbus_project/df_apsrtc.csv")
+for i, r in df_apsrtc.iterrows():
+    list_apsrtc.append(r["route_name"])#
+
+This block repeats for other states (df_astc.csv, df_bsrtc.csv, etc.), loading routes for those states into their respective lists.
+
+Step 5: Select Rating Range
+
+#ratings = st.select_slider("Ratings", ('0 to 1', '1 to 2', '2 to 3', '3 to 4', '4 to 5'))#
+
+A slider widget allows the user to select a rating range. It includes the ranges '0 to 1', '1 to 2', etc.
+
+Step 6: Fetching Data from MySQL Database
+Depending on the selected state, the app will query the MySQL database for buses based on the selected route, departure time, and rating range.
+
+Example for Andhra Pradesh:
+
+#if state == "Andhra Pradesh":
+    A = st.selectbox("Select the Route", list_apsrtc, index=None)
+    timing = st.radio("Select the Departure Time", ("'00:01:00' and '05:59:00'", "'06:00:00' and '12:00:00'", "'12:01:00' and '18:00:00'", "'18:01:00' and '00.00:00'"))#
+
+After the user selects the state (Andhra Pradesh in this case), a second dropdown allows them to choose a bus route (A).
+A radio button (radio) widget is used to let the user select a departure time range.
+Then, the code checks the selected rating range (ratings) and builds an SQL query accordingly. For example, if the user selects the rating range '0 to 1', the following query is executed:
+
+#conn = mysql.connector.connect(host="localhost", user="root", password="24434244342", database="redbus_project")
+my_cursor = conn.cursor()
+query = f"SELECT busname, bustype, departing_time, reaching_time, duration, star_rating, route_link FROM bus_data WHERE star_rating BETWEEN '0.00' AND '1.00' AND departing_time BETWEEN {timing} AND route_name = '{A}' ORDER BY departing_time ASC;"
+my_cursor.execute(query)
+out = my_cursor.fetchall()
+df = pd.DataFrame(out, columns=['busname', 'bustype', 'departing_time', 'reaching_time', 'duration', 'star_rating', 'route_link'])
+st.write(df)#
+
+The app connects to the MySQL database using the mysql.connector.connect method.
+The query fetches the bus data for the selected state, route, and rating range, ordered by the departure time.
+The fetched data is displayed as a DataFrame in the Streamlit app.
+
+Step 7: Repeating for Other States
+The process described for Andhra Pradesh is repeated for other states (Assam, Bihar, Chandigarh, etc.). The only difference is the state-specific route list (list_astc, list_bsrtc, etc.) and the corresponding SQL query to fetch the data.
+
+Step 8: Final Output
+After the user selects all their preferences (state, route, departure time, and rating range), the app will execute the appropriate SQL query and display the results in a tabular format.
+The displayed DataFrame includes:
+busname: Name of the bus.
+bustype: Type of the bus (e.g., sleeper, semi-sleeper).
+departing_time: Time the bus departs.
+reaching_time: Time the bus reaches the destination.
+duration: Duration of the journey.
+star_rating: Rating of the bus.
+route_link: A link to the bus route or additional details.
